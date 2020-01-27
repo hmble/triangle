@@ -188,6 +188,8 @@ func main() {
 		log.Fatal("Error in creating image")
 	}
 
+	defer outfile.Close()
+
 	encodeErr := jpeg.Encode(outfile, cimg, nil)
 
 	if encodeErr != nil {

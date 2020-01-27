@@ -122,11 +122,20 @@ func setColor(colors []*Pixel, color RGB) {
 	}
 
 }
+
+func min(x, y int) int {
+
+	if x < y {
+		return x
+	}
+
+	return y
+}
 func main() {
 
 	start := time.Now()
 	// 600x600 image path
-	twoCopy2 := "./assets/two_copy2.jpg"
+	twoCopy2 := "./assets/two.jpg"
 
 	reader, readErr := os.Open(twoCopy2)
 
@@ -143,18 +152,26 @@ func main() {
 		log.Fatal("Error in decoding image")
 	}
 
-	//bounds := img.Bounds()
+	bounds := img.Bounds()
+
+	minSize := min((bounds.Max.Y - bounds.Min.Y), (bounds.Max.X - bounds.Min.X))
+	size := minSize
 
 	//fmt.Println(bounds.Max.X, bounds.Max.Y)
 
-	tilesArray := getTilesArray(100, 600, img)
+	fmt.Println("size is ", size)
+	tilesArray := getTilesArray(100, size, img)
 
 	fmt.Println("Tilesarray length", len(tilesArray))
 
 	// tileArrayCopy := &tilesArray
 
-	cimg := image.NewRGBA(img.Bounds())
-	draw.Draw(cimg, img.Bounds(), img, image.Point{}, draw.Over)
+	// https://stackoverflow.com/questions/36573413/change-color-of-a-single-pixel-golang-image
+	rect := image.Rect(bounds.Min.X, bounds.Min.Y, size, size)
+	//cimg := image.NewRGBA(img.Bounds())
+	cimg := image.NewRGBA(rect)
+	//draw.Draw(cimg, img.Bounds(), img, image.Point{}, draw.Over)
+	draw.Draw(cimg, rect, img, image.Point{}, draw.Over)
 	for _, tiles := range tilesArray {
 		for _, tile := range tiles {
 			pc := tile.Color
@@ -165,7 +182,7 @@ func main() {
 		}
 	}
 
-	outfile, err := os.Create("assets/newCreate.jpg")
+	outfile, err := os.Create("assets/NewHighRes.jpg")
 
 	if err != nil {
 		log.Fatal("Error in creating image")

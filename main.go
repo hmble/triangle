@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	_ "image/jpeg"
+	"image/draw"
+	"image/jpeg"
 	"log"
 	"math"
 	"os"
@@ -56,10 +57,6 @@ func (p Pixel) String() string {
 	)
 
 	return s
-}
-
-type ImageSet interface {
-	Set(x, y int, c color.Color)
 }
 
 // Get tiles array of group to make tiles and get average color
@@ -140,7 +137,7 @@ func main() {
 
 	// // Decode image
 
-	img, _, imgErr := image.Decode(reader)
+	img, imgErr := jpeg.Decode(reader)
 
 	if imgErr != nil {
 		log.Fatal("Error in decoding image")
@@ -150,19 +147,35 @@ func main() {
 
 	//fmt.Println(bounds.Max.X, bounds.Max.Y)
 
-	tilesArray := getTilesArray(2, 600, img)
+	tilesArray := getTilesArray(100, 600, img)
 
 	fmt.Println("Tilesarray length", len(tilesArray))
 
 	// tileArrayCopy := &tilesArray
 
-  imageSet := img.(ImageSet)
+	cimg := image.NewRGBA(img.Bounds())
+	draw.Draw(cimg, img.Bounds(), img, image.Point{}, draw.Over)
+	for _, tiles := range tilesArray {
+		for _, tile := range tiles {
+			pc := tile.Color
 
-  for _, tiles := tilesArray {
-    for _, tile := tiles {
-      imageSet.Set(tile.Point.X, tile.Point.Y, )
-    }
-  }
+			pixel := color.RGBA{uint8(pc.R), uint8(pc.G), uint8(pc.B), uint8(pc.A)}
+			cimg.Set(tile.Point.X, tile.Point.Y, pixel)
+
+		}
+	}
+
+	outfile, err := os.Create("assets/newCreate.jpg")
+
+	if err != nil {
+		log.Fatal("Error in creating image")
+	}
+
+	encodeErr := jpeg.Encode(outfile, cimg, nil)
+
+	if encodeErr != nil {
+		log.Fatal("Error in encdoing output image")
+	}
 
 	elapsed := time.Since(start)
 

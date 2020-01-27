@@ -8,14 +8,8 @@ import (
 	"log"
 	"math"
 	"os"
+	"time"
 )
-
-// type RGB struct {
-// 	R uint32
-// 	G uint32
-// 	B uint32
-// 	A uint32
-// }
 
 type RGB struct {
 	R, G, B, A int64
@@ -88,7 +82,7 @@ func getTilesArray(tilesize, borderWidth int, img image.Image) [][]Pixel {
 		}
 
 		temparray := make([]Pixel, 0)
-		//	colorsArray := make([]RGB, 0)
+		colorsArray := make([]RGB, 0)
 		point := Pixel{}
 		for x := 0; x < tilesize; x++ {
 			for y := 0; y < tilesize; y++ {
@@ -104,13 +98,20 @@ func getTilesArray(tilesize, borderWidth int, img image.Image) [][]Pixel {
 				}
 
 				point.OwnColor = rgba
-				//				colorsArray = append(colorsArray, rgba)
+				colorsArray = append(colorsArray, rgba)
 				temparray = append(temparray, point)
 			}
 		}
+		avgColor := averageColor(colorsArray)
+		tempcount := 0
+		for x := 0; x < tilesize; x++ {
+			for y := 0; y < tilesize; y++ {
+				temparray[tempcount].Color = avgColor
+				tempcount++
 
-		// 		avgColor := averageColor(colorsArray)
-		// 		setColor(temparray, avgColor)
+			}
+		}
+
 		pointsArray = append(pointsArray, temparray)
 
 	}
@@ -126,6 +127,7 @@ func setColor(colors []*Pixel, color RGB) {
 }
 func main() {
 
+	start := time.Now()
 	// 600x600 image path
 	twoCopy2 := "./assets/two_copy2.jpg"
 
@@ -154,12 +156,15 @@ func main() {
 
 	// tileArrayCopy := &tilesArray
 
-	// for i, tiles := range tilesArray {
-	// for j, tile := range tiles {
+  imageSet := img.(ImageSet)
 
-	// }
-	// }
+  for _, tiles := tilesArray {
+    for _, tile := tiles {
+      imageSet.Set(tile.Point.X, tile.Point.Y, )
+    }
+  }
 
-	r, g, b, _ := img.At(599, 599).RGBA()
-	fmt.Printf("[%d, %d, %d]", int64(r>>8), int64(g>>8), int64(b>>8))
+	elapsed := time.Since(start)
+
+	fmt.Println(elapsed)
 }
